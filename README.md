@@ -1,5 +1,5 @@
-# cpvlib ![Python package](https://github.com/isi-ies-group/cpvlib/workflows/Python%20package/badge.svg)
-Parte del trabajo de Marcos
+# StaticHybridSystem-benchmark
+2020-06 IEEE talk
 
 Dataset de prueba [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3346823.svg)](https://doi.org/10.5281/zenodo.3346823)
 
@@ -9,7 +9,6 @@ Dataset de prueba [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3346823.sv
 * yield_static_cpv.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/cpvlib/master?filepath=yield_static_cpv.ipynb)
 * yield_static_diffuse.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/cpvlib/master?filepath=yield_static_diffuse.ipynb)
 
-* prueba_tmy_HybridSystem.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/cpvlib/master?urlpath=lab?filepath=prueba_tmy_HybridSystem.ipynb)
 
 ## TO DO
 * [x] StaticCPVSystem debe heredar de verdad de CPVSystem
