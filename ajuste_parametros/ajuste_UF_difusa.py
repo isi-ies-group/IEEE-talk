@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 import pvlib
 
-data = pd.read_csv('../datos/InsolightMay2019.csv',
+data = pd.read_csv('data/InsolightMay2019.csv',
                    index_col='Date Time', parse_dates=True, encoding='latin1')
 data.index = data.index.tz_localize('Europe/Madrid')
 
@@ -49,48 +49,48 @@ data = data.replace(np.inf, np.nan).dropna()
 data_filt = data[data['isc_si/gii'].rolling(window='2Min').std() < 0.0002]
 # data_filt = data_filt[data_filt['isc_si/gii'] < 0.0021]
 
-data_filt['isc_si/gii'].plot(style='.')
+# data_filt['isc_si/gii'].plot(style='.')
 
-data_filt.plot.scatter(y='isc_si/gii', x='aoi', ylim=[0, 0.006], xlim=[0, 90])
+# data_filt.plot.scatter(y='isc_si/gii', x='aoi', ylim=[0, 0.006], xlim=[0, 90])
 
 #%% Ajuste lineal por tramos
-def linear(x, a, b):
-    return a * x + b
+def linear(x, m, b):
+    return m * x + b
 
 data_filt_aoi1 = data_filt.query('aoi<55')
 data_filt_aoi2 = data_filt.query('55<aoi<80')
 
-(a1, b1), pcov = curve_fit(
+(m1, b1), pcov = curve_fit(
     linear, data_filt_aoi1['aoi'], data_filt_aoi1['isc_si/gii'])
-(a2, b2), pcov = curve_fit(
+(m2, b2), pcov = curve_fit(
     linear, data_filt_aoi2['aoi'], data_filt_aoi2['isc_si/gii'])
 
-isc_si_est1 = linear(data_filt_aoi1['aoi'], a1, b1)
-isc_si_est2 = linear(data_filt_aoi2['aoi'], a2, b2)
+isc_si_est1 = linear(data_filt_aoi1['aoi'], m1, b1)
+isc_si_est2 = linear(data_filt_aoi2['aoi'], m2, b2)
 
 residuals1 = data_filt_aoi1['isc_si/gii'] - isc_si_est1
 RMSE1 = np.sqrt(((residuals1) ** 2).mean())
-print(f'RMSE1={RMSE1} a1={a1} b1={b1}')
-plt.hist(residuals1, bins=100)
+print(f'RMSE1={RMSE1} m1={m1} b1={b1}')
+# plt.hist(residuals1, bins=100)
 
 residuals2 = data_filt_aoi2['isc_si/gii'] - isc_si_est2
 RMSE2 = np.sqrt(((residuals2) ** 2).mean())
-print(f'RMSE2={RMSE2} a2={a2} b2={b2}')
-plt.hist(residuals2, bins=100)
+print(f'RMSE2={RMSE2} m2={m2} b2={b2}')
+# plt.hist(residuals2, bins=100)
 
-ax = data_filt.plot.scatter(y='isc_si/gii', x='aoi',
-                            ylim=[0, 0.006], xlim=[0, 90])
-ax.plot(data_filt_aoi1['aoi'], isc_si_est1, 'r-')
-ax.plot(data_filt_aoi2['aoi'], isc_si_est2, 'r-')
+# ax = data_filt.plot.scatter(y='isc_si/gii', x='aoi',
+                            # ylim=[0, 0.006], xlim=[0, 90])
+# ax.plot(data_filt_aoi1['aoi'], isc_si_est1, 'r-')
+# ax.plot(data_filt_aoi2['aoi'], isc_si_est2, 'r-')
 
 #%% define la funcion por tramos
-def get_aoi_util_factor(aoi, aoi_thld, aoi_limit, a1, b1, a2, b2):
+def get_aoi_util_factor(aoi, aoi_thld, aoi_limit, m1=m1, b1=b1, m2=m2, b2=b2):
     if isinstance(aoi, (int, float)):
         aoi = float(aoi)
     else:
         aoi = aoi.values
     condlist = [aoi < aoi_thld, (aoi_thld <= aoi) & (aoi < aoi_limit)]
-    funclist = [lambda x:x*b1+a1, lambda x:x*b2+a2]
+    funclist = [lambda x:x*m1+b1, lambda x:x*m2+b2]
     
     return np.piecewise(aoi, condlist, funclist)
 

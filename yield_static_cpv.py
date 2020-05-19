@@ -38,7 +38,7 @@ solpos = location.get_solarposition(data.index)
 # irrad_ref = 1000,
 # temp_ref = 25
 
-IN_TRACKER = True
+IN_TRACKER = False
 
 A_ref = 10
 
@@ -46,7 +46,6 @@ modulo = 'soitec'
 
 if modulo == 'insolight':
     # Insolight (César)
-    
     A = 0.10  # m2
 
     corr = A_ref / A
@@ -136,8 +135,8 @@ irradiance = static_cpv_sys.get_irradiance(
     solpos['zenith'], solpos['azimuth'], data['dni'])
 
 iam_param = 0.67
-effective_irradiance = irradiance * \
-    static_cpv_sys.get_iam(aoi, iam_param)
+effective_irradiance = irradiance# * \
+    # static_cpv_sys.get_iam(aoi, iam_param)
 
 cell_temp = static_cpv_sys.pvsyst_celltemp(
     poa_global=effective_irradiance,

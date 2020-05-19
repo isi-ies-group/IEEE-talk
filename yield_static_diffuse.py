@@ -38,7 +38,7 @@ solpos = location.get_solarposition(data.index)
 # irrad_ref = 1000,
 # temp_ref = 25
 
-IN_TRACKER = True
+IN_TRACKER = False
 
 A_ref = 10
 
@@ -117,11 +117,14 @@ irradiance = pvlib.irradiance.get_total_irradiance(
     dni=data['dni'], ghi=data['ghi'], dhi=data['dhi']
 )['poa_diffuse']
 
-effective_irradiance = static_diffuse_sys.get_irradiance(
+effective_irradiance = (
+    static_diffuse_sys.get_irradiance(
     solar_zenith=solpos['zenith'], solar_azimuth=solpos['azimuth'],
     aoi=aoi, aoi_limit=55,
-    dni=data['dni'], ghi=data['ghi'], dhi=data['dhi']
-) * pvlib.iam.martin_ruiz(aoi, a_r=0.16)
+    dni=data['dni'], ghi=data['ghi'], dhi=data['dhi'])
+* pvlib.iam.martin_ruiz(aoi, a_r=0.16)
+* static_diffuse_sys.get_iam(aoi=aoi, aoi_thld=0, aoi_limit=70, m1=0, b1=1, m2=0, b2=1)
+)
 
 cell_temp = static_diffuse_sys.pvsyst_celltemp(
     poa_diffuse_static=effective_irradiance,

@@ -70,7 +70,7 @@ class CPVSystem(pvlib.pvsystem.PVSystem):
                  module=None, module_parameters=None,
                  modules_per_string=1, strings_per_inverter=1,
                  inverter=None, inverter_parameters=None,
-                 racking_model='freestanding',# es solo de modelo sapm
+                 racking_model='freestanding',# only for sapm model
                  losses_parameters=None, name=None, albedo=None,
                  surface_type=None, **kwargs):
 
@@ -305,8 +305,7 @@ class CPVSystem(pvlib.pvsystem.PVSystem):
                                       m_low=dni_uf_m_low,
                                       m_high=dni_uf_m_high)
 
-    def get_global_utilization_factor(self, airmass_absolute, temp_air,
-                                      solar_zenith, solar_azimuth):
+    def get_global_utilization_factor(self, airmass_absolute, temp_air):
 
         uf_am = self.get_am_util_factor(airmass=airmass_absolute)
 
@@ -529,8 +528,7 @@ class StaticCPVSystem(CPVSystem):
         return aoi_uf
 
     # DEPRECATED
-    def get_global_utilization_factor_using_aoi(self, airmass_absolute, temp_air,
-                                              aoi, solar_zenith, solar_azimuth):
+    def get_global_utilization_factor_using_aoi(self, airmass_absolute, temp_air, aoi):
 
         uf_am = self.get_am_util_factor(airmass=airmass_absolute)
 
@@ -714,19 +712,19 @@ class StaticDiffuseSystem(pvlib.pvsystem.PVSystem):
                                         model_params=self.racking_model,
                                         **kwargs)
 
-    def get_iam(self, aoi, aoi_thld, aoi_limit, a1, b1, a2, b2):
+    def get_iam(self, aoi, aoi_thld, aoi_limit, m1, b1, m2, b2):
         if isinstance(aoi, (int, float)):
-            aoi = float(aoi)
+            aoi_values = float(aoi)
         else:
-            aoi = aoi.values
+            aoi_values = aoi.values
             
-        condlist = [aoi < aoi_thld, (aoi_thld <= aoi) & (aoi < aoi_limit)]
-        funclist = [lambda x:x*b1+a1, lambda x:x*b2+a2]
+        condlist = [aoi_values < aoi_thld, (aoi_thld <= aoi_values) & (aoi_values < aoi_limit)]
+        funclist = [lambda x:x*m1+b1, lambda x:x*m2+b2]
         
         if isinstance(aoi, (int, float)):
             return np.piecewise(aoi, condlist, funclist)
         else:
-            return np.piecewise(aoi, condlist, funclist)[0]
+            return pd.Series(np.piecewise(aoi_values, condlist, funclist), index=aoi.index)
 
 
 class StaticHybridSystem():
@@ -870,12 +868,14 @@ class StaticHybridSystem():
                 solar_zenith, solar_azimuth, dni, **kwargs)
 
         aoi = self.static_cpv_sys.get_aoi(solar_zenith, solar_azimuth)
+        
+        dii_effective = dii * self.static_cpv_sys.get_iam(aoi, iam_param=iam_param)
 
         poa_diffuse_static = self.static_diffuse_sys.get_irradiance(solar_zenith,
                                                                     solar_azimuth,
                                                                     aoi=aoi,
                                                                     aoi_limit=aoi_limit,
-                                                                    dii=dii,  # dii_effective no aplica, ya que si no el calculo de difusa es artificialmente alto!
+                                                                    dii=dii,
                                                                     gii=gii,
                                                                     ghi=ghi,
                                                                     dhi=dhi,
@@ -884,9 +884,7 @@ class StaticHybridSystem():
                                                                     )
 
         poa_diffuse_static_effective = poa_diffuse_static #* self.static_diffuse_sys.get_iam(
-            #aoi=aoi, aoi_thld=55, aoi_limit=80, a1=1, b1=0, a2=1, b2=0)
-
-        dii_effective = dii * pvlib.iam.ashrae(aoi, b=iam_param)
+            #aoi=aoi, aoi_thld=55, aoi_limit=80, m1=1, b1=0, m2=1, b2=0)
 
         return dii_effective, poa_diffuse_static_effective
 
@@ -971,8 +969,7 @@ class StaticHybridSystem():
 
         return diode_parameters_cpv, diode_parameters_diffuse
 
-    def get_global_utilization_factor_cpv(self, airmass_absolute, temp_air,
-                                          solar_zenith, solar_azimuth):
+    def get_global_utilization_factor_cpv(self, airmass_absolute, temp_air):
 
         uf_am = self.static_cpv_sys.get_am_util_factor(
             airmass=airmass_absolute)
