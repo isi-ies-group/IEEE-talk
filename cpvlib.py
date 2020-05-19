@@ -908,12 +908,12 @@ class StaticHybridSystem():
         celltemp_cpv = self.static_cpv_sys.pvsyst_celltemp(
             dii, temp_air, wind_speed)
 
-        celltemp_diffuse = self.static_flatplate_sys.pvsyst_celltemp(
+        celltemp_flatplate = self.static_flatplate_sys.pvsyst_celltemp(
             poa_flatplate_static, temp_air, wind_speed)
 
-        return celltemp_cpv, celltemp_diffuse
+        return celltemp_cpv, celltemp_flatplate
 
-    def calcparams_pvsyst(self, dii, poa_flatplate_static, temp_cell_cpv, temp_cell_diffuse):
+    def calcparams_pvsyst(self, dii, poa_flatplate_static, temp_cell_cpv, temp_cell_flatplate):
         """
         Use the :py:func:`calcparams_pvsyst` function, the input
         parameters and ``self.module_parameters`` to calculate the
@@ -941,18 +941,18 @@ class StaticHybridSystem():
         diode_parameters_cpv = self.static_cpv_sys.calcparams_pvsyst(
             dii, temp_cell_cpv)
 
-        # kwargs_diffuse = _build_kwargs(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
+        # kwargs_flatplate = _build_kwargs(['gamma_ref', 'mu_gamma', 'I_L_ref', 'I_o_ref',
         #                         'R_sh_ref', 'R_sh_0', 'R_sh_exp',
         #                         'R_s', 'alpha_sc', 'EgRef',
         #                         'irrad_ref', 'temp_ref',
         #                         'cells_in_series'],
         #                        self.static_cpv_sys.module_parameters)
-        diode_parameters_diffuse = self.static_flatplate_sys.calcparams_pvsyst(
-            poa_flatplate_static, temp_cell_diffuse)
+        diode_parameters_flatplate = self.static_flatplate_sys.calcparams_pvsyst(
+            poa_flatplate_static, temp_cell_flatplate)
 
-        return diode_parameters_cpv, diode_parameters_diffuse
+        return diode_parameters_cpv, diode_parameters_flatplate
 
-    def singlediode(self, diode_parameters_cpv, diode_parameters_diffuse, ivcurve_pnts=None):
+    def singlediode(self, diode_parameters_cpv, diode_parameters_flatplate, ivcurve_pnts=None):
         """Wrapper around the :py:func:`singlediode` function.
 
         Parameters
@@ -967,10 +967,10 @@ class StaticHybridSystem():
         diode_parameters_cpv = self.static_cpv_sys.singlediode(*diode_parameters_cpv,
                                                                ivcurve_pnts=ivcurve_pnts)
 
-        diode_parameters_diffuse = self.static_flatplate_sys.singlediode(*diode_parameters_diffuse,
+        diode_parameters_flatplate = self.static_flatplate_sys.singlediode(*diode_parameters_flatplate,
                                                                          ivcurve_pnts=ivcurve_pnts)
 
-        return diode_parameters_cpv, diode_parameters_diffuse
+        return diode_parameters_cpv, diode_parameters_flatplate
 
     def get_global_utilization_factor_cpv(self, airmass_absolute, temp_air):
 
