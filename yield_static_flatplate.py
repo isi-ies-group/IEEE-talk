@@ -81,7 +81,7 @@ elif modulo == 'isofoton':
     }
 
 #%% calcula Pmp STC
-Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.StaticDiffuseSystem(
+Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.StaticFlatPlateSystem(
     module_parameters=pv_mod_params
 ).calcparams_pvsyst(
     effective_irradiance=1000,
@@ -93,7 +93,7 @@ temp_mod_params = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst']['free
 # print(temp_mod_params)
 
 # %% Modelo PVSyst
-static_diffuse_sys = cpvlib.StaticDiffuseSystem(
+static_flatplate_sys = cpvlib.StaticFlatPlateSystem(
     surface_tilt=37,
     surface_azimuth=180,
     # albedo=0.2,
@@ -104,40 +104,40 @@ static_diffuse_sys = cpvlib.StaticDiffuseSystem(
 )
 
 # AOI
-aoi = static_diffuse_sys.get_aoi(
+aoi = static_flatplate_sys.get_aoi(
     solar_zenith=solpos['zenith'],
     solar_azimuth=solpos['azimuth'],
 )
 # aoi.plot()
 
-# NO equivale a static_diffuse_sys.get_irradiance(..., aoi_limit=90)!!!
+# NO equivale a static_flatplate_sys.get_irradiance(..., aoi_limit=90)!!!
 irradiance = pvlib.irradiance.get_total_irradiance(
-    static_diffuse_sys.surface_tilt, static_diffuse_sys.surface_azimuth,
+    static_flatplate_sys.surface_tilt, static_flatplate_sys.surface_azimuth,
     solar_zenith=solpos['zenith'], solar_azimuth=solpos['azimuth'],
     dni=data['dni'], ghi=data['ghi'], dhi=data['dhi']
 )['poa_diffuse']
 
 effective_irradiance = (
-    static_diffuse_sys.get_irradiance(
+    static_flatplate_sys.get_irradiance(
     solar_zenith=solpos['zenith'], solar_azimuth=solpos['azimuth'],
     aoi=aoi, aoi_limit=55,
     dni=data['dni'], ghi=data['ghi'], dhi=data['dhi'])
 * pvlib.iam.martin_ruiz(aoi, a_r=0.16)
-* static_diffuse_sys.get_iam(aoi=aoi, aoi_thld=0, aoi_limit=70, m1=0, b1=1, m2=0, b2=1)
+* static_flatplate_sys.get_iam(aoi=aoi, aoi_thld=0, aoi_limit=70, m1=0, b1=1, m2=0, b2=1)
 )
 
-cell_temp = static_diffuse_sys.pvsyst_celltemp(
-    poa_diffuse_static=effective_irradiance,
+cell_temp = static_flatplate_sys.pvsyst_celltemp(
+    poa_flatplate_static=effective_irradiance,
     temp_air=data['temp_air'],
     wind_speed=data['wind_speed']
 )
 
-diode_parameters = static_diffuse_sys.calcparams_pvsyst(
+diode_parameters = static_flatplate_sys.calcparams_pvsyst(
     effective_irradiance=effective_irradiance,
     temp_cell=cell_temp,
 )
 
-power = static_diffuse_sys.singlediode(
+power = static_flatplate_sys.singlediode(
     *diode_parameters)
 
 #%%
@@ -159,7 +159,7 @@ print(f'Total TMY energy per reference area={power["p_mp"].sum()/1000:.0f} kWh/y
 #%% Curvas IV vs G,Tc
 plt.figure()
 for G in [200, 400, 600, 800, 1000]:
-    d = static_diffuse_sys.singlediode(*static_diffuse_sys.calcparams_pvsyst(
+    d = static_flatplate_sys.singlediode(*static_flatplate_sys.calcparams_pvsyst(
         effective_irradiance=G,
         temp_cell=25,
     ), ivcurve_pnts=20
@@ -169,7 +169,7 @@ for G in [200, 400, 600, 800, 1000]:
 #%%
 plt.figure()
 for t in [10, 25, 40, 55, 70]:
-    d = static_diffuse_sys.singlediode(*static_diffuse_sys.calcparams_pvsyst(
+    d = static_flatplate_sys.singlediode(*static_flatplate_sys.calcparams_pvsyst(
         effective_irradiance=1000,
         temp_cell=t,
     ), ivcurve_pnts=20

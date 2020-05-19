@@ -46,3 +46,5 @@ Dataset de prueba [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3346823.sv
 * [ ] Repasar atributo albedo
 * [ ] Limitar AOI con aoi_limit en StaticCPVSystem.get_iam() ¿? Ahora supera los 55º
 * [ ] Cual sería la reference_irradiance de StaticDiffuseSystem ¿dhi, ghi, la get_irradiance(aoi_limit)?
+* [X] Renombrar sub-sistema Híbrido -> Flat-plate y variables relacionadas
+* [ ] Uniformizar modelo diffusa
