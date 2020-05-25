@@ -72,12 +72,12 @@ elif modulo == 'isofoton':
         "alpha_sc": 2.3e-3,  # coef. temp. Isc
         "gamma_ref": 0.970,  # "Datos básicos"
         "mu_gamma": 0,  # "Parámetros modelo"
-        "I_L_ref": 6.76 *sqrt(corr),#*sqrt(10/0.85),  # Isc
+        "I_L_ref": 6.76 *sqrt(corr), # Isc
         "I_o_ref": 0.23e-9,  # "Datos básicos"
         "R_sh_ref": 200,  # R paral ref "Parámetros modelo"
         "R_sh_0": 800,  # R paral G=0 W/m2 "Parámetros modelo"
         "R_s": 0.248,  # R serie "Parámetros modelo"
-        "cells_in_series": 36 *sqrt(corr),# *sqrt(10/0.85),
+        "cells_in_series": 36 *sqrt(corr),
     }
 
 #%% calcula Pmp STC

@@ -1,14 +1,11 @@
 # StaticHybridSystem-benchmark
 2020-06 IEEE talk
 
-Dataset de prueba [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3346823.svg)](https://doi.org/10.5281/zenodo.3346823)
-
 ## Notebooks en Binder
-* yield_pv.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=yield_pv.ipynb)
-* yield_cpv.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=yield_cpv.ipynb)
-* yield_static_cpv.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=yield_static_cpv.ipynb)
-* yield_static_diffuse.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=yield_static_diffuse.ipynb)
+* analisis_recurso.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=analisis_recurso.ipynb)
+* productividad_pv.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=productividad_pv.ipynb)
 
+Dataset de prueba [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3346823.svg)](https://doi.org/10.5281/zenodo.3346823)
 
 ## TO DO
 * [x] StaticCPVSystem debe heredar de verdad de CPVSystem

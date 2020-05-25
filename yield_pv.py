@@ -39,7 +39,7 @@ solpos = location.get_solarposition(data.index)
 
 A_ref = 10
 
-modulo = 'isofoton'
+modulo = 'canadian'
 
 if modulo == 'ejemplo':
     # https://pvpmc.sandia.gov/PVLIB_Matlab_Help/html/pvl_calcparams_PVsyst_help.html
@@ -59,22 +59,22 @@ if modulo == 'ejemplo':
         "cells_in_series": 60 *sqrt(corr),
     }
         
-elif modulo == 'isofoton':
-    # Isofoton_I110 - PVSyst
-    A = 0.85  # m2
+elif modulo == 'canadian':
+    # Canadian Solar CS1U-410MS - PVSyst
+    A = 2.061  # m2
 
     corr = A_ref / A
     A *= corr
     pv_mod_params = {
-        "alpha_sc": 2.3e-3,  # coef. temp. Isc
-        "gamma_ref": 0.970,  # "Datos básicos"
-        "mu_gamma": 0,  # "Parámetros modelo"
-        "I_L_ref": 6.76 *sqrt(corr),#*sqrt(10/0.85),  # Isc
-        "I_o_ref": 0.23e-9,  # "Datos básicos"
-        "R_sh_ref": 200,  # R paral ref "Parámetros modelo"
-        "R_sh_0": 800,  # R paral G=0 W/m2 "Parámetros modelo"
-        "R_s": 0.248,  # R serie "Parámetros modelo"
-        "cells_in_series": 36 *sqrt(corr),# *sqrt(10/0.85),
+        "alpha_sc": 4.8e-3,  # coef. temp. Isc
+        "gamma_ref": 0.967,  # "Datos básicos"
+        "mu_gamma": -0.00042,  # "Parámetros modelo" [1/K]
+        "I_L_ref": 9.7 *sqrt(corr),# Isc
+        "I_o_ref": 0.03e-9,  # "Datos básicos"
+        "R_sh_ref": 600,  # R paral ref "Parámetros modelo"
+        "R_sh_0": 2500,  # R paral G=0 W/m2 "Parámetros modelo"
+        "R_s": 0.291,  # R serie "Parámetros modelo"
+        "cells_in_series": 81 *sqrt(corr),
     }
 
 #%%
