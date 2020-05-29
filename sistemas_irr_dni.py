@@ -17,7 +17,7 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv, spillage_factor):
         "alpha_sc": 0.00,
         "gamma_ref": 3.664,
         "mu_gamma": 0.003,
-        "I_L_ref": 3.861 *1.215*eff_opt_cpv *sqrt(corr),
+        "I_L_ref": 3.861 *1.274*eff_opt_cpv *sqrt(corr),
         "I_o_ref": 0.005e-9,
         "R_sh_ref": 3461,
         "R_sh_0": 25000,
@@ -30,14 +30,14 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv, spillage_factor):
 
     UF_parameters_cpv = {
         "IscDNI_top": 1,
-        "am_thld": 3,
-        "am_uf_m_low": 0.005,
-        "am_uf_m_high": -0.005,
-        "ta_thld": 50,
-        "ta_uf_m_low": 0.001,
+        "am_thld": 1.7,
+        "am_uf_m_low": 0.1,
+        "am_uf_m_high": -0.1,
+        "ta_thld": 25,
+        "ta_uf_m_low": 0.005,
         "ta_uf_m_high": 0,
-        "weight_am": 0.2,
-        "weight_temp": 0.8,
+        "weight_am": 0.55,
+        "weight_temp": 0.45,
     }
 
     cpv_mod_params.update(UF_parameters_cpv)
@@ -65,7 +65,7 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv, spillage_factor):
     theta_ref = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
     iam_ref = [1.000, 1.007, 0.998, 0.991, 0.971, 0.966, 0.938, 0.894, 0.830, 0.790, 0.740, 0.649, 0.387]
 
-    cpv_effective_irradiance = cpv_irradiance * pvlib.iam.interp(aoi, theta_ref, iam_ref, method='linear') * (1 - spillage_factor)
+    cpv_effective_irradiance = cpv_irradiance * pvlib.iam.interp(aoi, theta_ref, iam_ref, method='linear')
 
     #pd.Series(iam_ref, theta_ref).plot()
 
@@ -84,7 +84,7 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv, spillage_factor):
 
     data['am'] = location.get_airmass(data.index).airmass_absolute
 
-    uf_cpv = static_cpv_sys.get_global_utilization_factor(data['am'], data['temp_air'])
+    uf_cpv = static_cpv_sys.get_am_util_factor(data['am'])
 
     cpv_power_p_mp = cpv_power_no_uf['p_mp'] * uf_cpv
     
