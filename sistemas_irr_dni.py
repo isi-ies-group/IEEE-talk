@@ -4,25 +4,69 @@ import pvlib
 
 import cpvlib
 
-def genera_pot_pv(A_ref, location, solpos, data, tilt, diffuse_model, in_singleaxis_tracker):
+A_ref = 10 # la eficiencia está ajustada para el FF con A_ref=10
 
-    # Canadian Solar CS1U-410MS - PVSyst
-    A = 2.061  # m2
-    
-    corr = A_ref / A
-    A *= corr
-    
-    pv_mod_params = {
-        "alpha_sc": 4.8e-3,  # coef. temp. Isc
-        "gamma_ref": 0.967,  # "Datos básicos"
-        "mu_gamma": -0.00042,  # "Parámetros modelo" [1/K]
-        "I_L_ref": 9.7 *sqrt(corr), # Isc
-        "I_o_ref": 0.03e-9,  # "Datos básicos"
-        "R_sh_ref": 600,  # R paral ref "Parámetros modelo"
-        "R_sh_0": 2500,  # R paral G=0 W/m2 "Parámetros modelo"
-        "R_s": 0.291,  # R serie "Parámetros modelo"
-        "cells_in_series": 81 *sqrt(corr),
+# Canadian Solar CS1U-410MS - PVSyst
+A_pv = 2.061  # m2
+
+corr_pv = A_ref / A_pv
+A_pv *= corr_pv
+
+pv_mod_params = {
+    "alpha_sc": 4.8e-3,  # coef. temp. Isc
+    "gamma_ref": 0.967,  # "Datos básicos"
+    "mu_gamma": -0.00042,  # "Parámetros modelo" [1/K]
+    "I_L_ref": 9.7 *sqrt(corr_pv), # Isc
+    "I_o_ref": 0.03e-9,  # "Datos básicos"
+    "R_sh_ref": 600,  # R paral ref "Parámetros modelo"
+    "R_sh_0": 2500,  # R paral G=0 W/m2 "Parámetros modelo"
+    "R_s": 0.291,  # R serie "Parámetros modelo"
+    "cells_in_series": 81 *sqrt(corr_pv),
+}
+
+# Soitec CX-M500
+A_cpv = 7.386  # m2
+
+corr_cpv = A_ref / A_cpv
+A_cpv *= corr_cpv
+cpv_mod_params = {
+    "alpha_sc": 0.00,
+    "gamma_ref": 3.664,
+    "mu_gamma": 0.003,
+    "I_L_ref": 3.861 *1.274 *sqrt(corr_cpv),
+    "I_o_ref": 0.005e-9,
+    "R_sh_ref": 3461,
+    "R_sh_0": 25000,
+    "R_s": 0.61,
+    "EgRef": 3.91,
+    "cells_in_series": 240 *sqrt(corr_cpv),
+    "irrad_ref":943,
+    "temp_ref":64
+}
+
+UF_parameters_cpv = {
+    "IscDNI_top": 1,
+    "am_thld": 1.7,
+    "am_uf_m_low": 0.1,
+    "am_uf_m_high": -0.1,
+    "ta_thld": 25,
+    "ta_uf_m_low": 0.005,
+    "ta_uf_m_high": 0,
+    "weight_am": 0.55,
+    "weight_temp": 0.45,
+}
+
+cpv_mod_params.update(UF_parameters_cpv)
+
+parameters_tracker = {
+    "axis_tilt":10,
+    "axis_azimuth":180,
+    "max_angle":90, 
+    "backtrack":True,
+    "gcr":2/7
     }
+
+def genera_pot_pv(location, solpos, data, tilt, diffuse_model, in_singleaxis_tracker=False):
     
     temp_mod_params = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
 
@@ -36,11 +80,6 @@ def genera_pot_pv(A_ref, location, solpos, data, tilt, diffuse_model, in_singlea
     
     if in_singleaxis_tracker:
         
-        parameters_tracker = dict(
-            axis_tilt=10, axis_azimuth=180, max_angle=90, 
-            backtrack=True, gcr=2/7
-            )
-
         tracking_info = pvlib.tracking.singleaxis(
                 apparent_zenith=solpos['zenith'], 
                 apparent_azimuth=solpos['azimuth'], **parameters_tracker)
@@ -98,51 +137,19 @@ def genera_pot_pv(A_ref, location, solpos, data, tilt, diffuse_model, in_singlea
         effective_irradiance=1000,
         temp_cell=25))['p_mp']
     
-    eff_a = Pdc_stc / (1000 * A)
+    eff_a = Pdc_stc / (1000 * A_pv)
     
     return irradiance, p_mp, Pdc_stc, eff_a
 
-def genera_pot_cpv(A_ref, location, solpos, data, tilt, eff_opt_cpv):
+def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv):
     
-    # Soitec CX-M500
-    
-    A = 7.386  # m2
-    
-    corr = A_ref / A
-    A *= corr
-    cpv_mod_params = {
-        "alpha_sc": 0.00,
-        "gamma_ref": 3.664,
-        "mu_gamma": 0.003,
-        "I_L_ref": 3.861 *1.274*eff_opt_cpv *sqrt(corr),
-        "I_o_ref": 0.005e-9,
-        "R_sh_ref": 3461,
-        "R_sh_0": 25000,
-        "R_s": 0.61,
-        "EgRef": 3.91,
-        "cells_in_series": 240 *sqrt(corr),
-        "irrad_ref":943,
-        "temp_ref":64
-    }
-    
-    UF_parameters_cpv = {
-        "IscDNI_top": 1,
-        "am_thld": 1.7,
-        "am_uf_m_low": 0.1,
-        "am_uf_m_high": -0.1,
-        "ta_thld": 25,
-        "ta_uf_m_low": 0.005,
-        "ta_uf_m_high": 0,
-        "weight_am": 0.55,
-        "weight_temp": 0.45,
-    }
-    
-    cpv_mod_params.update(UF_parameters_cpv)
+    cpv_mod_params_copy = cpv_mod_params.copy()
+    cpv_mod_params_copy["I_L_ref"] *= eff_opt_cpv
     
     temp_mod_params = {"eta_m": 0.32, "u_c":29.0, "u_v":0.6} # Gerstmaier, Tobias et al «Validation of the PVSyst Performance Model for the Concentrix CPV Technology»
 
     cpv_sys = cpvlib.CPVSystem(
-        module_parameters=cpv_mod_params,
+        module_parameters=cpv_mod_params_copy,
         temperature_model_parameters=temp_mod_params,
         modules_per_string=1,
     )
@@ -170,62 +177,30 @@ def genera_pot_cpv(A_ref, location, solpos, data, tilt, eff_opt_cpv):
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.CPVSystem(
-        module_parameters=cpv_mod_params
+        module_parameters=cpv_mod_params_copy
         ).calcparams_pvsyst(
         effective_irradiance=1000,
         temp_cell=25))['p_mp']
     
-    eff_a = Pdc_stc / (1000 * A)
+    eff_a = Pdc_stc / (1000 * A_cpv)
     
     return irradiance, p_mp_uf, Pdc_stc, eff_a
 
-def genera_pot_static_cpv(A_ref, location, solpos, data, tilt, eff_opt_cpv, in_singleaxis_tracker):
+def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleaxis_tracker=False):
 
-    # Soitec CX-M500
-
-    A = 7.386  # m2
-
-    corr = A_ref / A
-    A *= corr
-    cpv_mod_params = {
-        "alpha_sc": 0.00,
-        "gamma_ref": 3.664,
-        "mu_gamma": 0.003,
-        "I_L_ref": 3.861 *1.274*eff_opt_cpv *sqrt(corr),
-        "I_o_ref": 0.005e-9,
-        "R_sh_ref": 3461,
-        "R_sh_0": 25000,
-        "R_s": 0.61,
-        "EgRef": 3.91,
-        "cells_in_series": 240 *sqrt(corr),
-        "irrad_ref":943,
-        "temp_ref":64
-    }
-
-    UF_parameters_cpv = {
-        "IscDNI_top": 1,
-        "am_thld": 1.7,
-        "am_uf_m_low": 0.1,
-        "am_uf_m_high": -0.1,
-        "ta_thld": 25,
-        "ta_uf_m_low": 0.005,
-        "ta_uf_m_high": 0,
-        "weight_am": 0.55,
-        "weight_temp": 0.45,
-    }
-
-    cpv_mod_params.update(UF_parameters_cpv)
+    cpv_mod_params_copy = cpv_mod_params.copy()
+    cpv_mod_params_copy["I_L_ref"] *= eff_opt_cpv
 
     cpv_temp_mod_params = {"eta_m": 0.32, "u_c":29.0, "u_v":0.6}
 
     static_cpv_sys = cpvlib.StaticCPVSystem(
             surface_tilt=tilt,
             surface_azimuth=180,
-            module_parameters=cpv_mod_params,
+            module_parameters=cpv_mod_params_copy,
             temperature_model_parameters=cpv_temp_mod_params,
             modules_per_string=1,
             in_singleaxis_tracker=in_singleaxis_tracker,
-            parameters_tracker=dict(axis_tilt=10, axis_azimuth=180, max_angle=90, backtrack=True, gcr=2/7)
+            parameters_tracker=parameters_tracker
     )
 
     irradiance = static_cpv_sys.get_irradiance(
@@ -264,37 +239,22 @@ def genera_pot_static_cpv(A_ref, location, solpos, data, tilt, eff_opt_cpv, in_s
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.StaticCPVSystem(
-        module_parameters=cpv_mod_params
+        module_parameters=cpv_mod_params_copy
         ).calcparams_pvsyst(
         effective_irradiance=1000,
         temp_cell=25))['p_mp']
     
-    eff_a = Pdc_stc / (1000 * A)
+    eff_a = Pdc_stc / (1000 * A_cpv)
     
     return irradiance, p_mp_uf, Pdc_stc, eff_a, aoi
 
-def genera_pot_flatplate(A_ref, location, solpos, data, diffuse_model, tilt, 
+def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt, 
                          aoi_limit, eff_opt_pv, cpv_irradiance_spillage, 
-                         type_irr_input, in_singleaxis_tracker):
+                         type_irr_input, in_singleaxis_tracker=False):
 
-    # Canadian Solar CS1U-410MS - PVSyst
-    A = 2.061  # m2
-
-    corr = A_ref / A
-    A *= corr
-
-    pv_mod_params = {
-        "alpha_sc": 4.8e-3,  # coef. temp. Isc
-        "gamma_ref": 0.967,  # "Datos básicos"
-        "mu_gamma": -0.00042,  # "Parámetros modelo" [1/K]
-        "I_L_ref": 9.7 *eff_opt_pv *sqrt(corr), # Isc
-        "I_o_ref": 0.03e-9,  # "Datos básicos"
-        "R_sh_ref": 600,  # R paral ref "Parámetros modelo"
-        "R_sh_0": 2500,  # R paral G=0 W/m2 "Parámetros modelo"
-        "R_s": 0.291,  # R serie "Parámetros modelo"
-        "cells_in_series": 81 *sqrt(corr),
-    }
-
+    pv_mod_params_copy = pv_mod_params.copy()
+    pv_mod_params_copy["I_L_ref"] *= eff_opt_pv
+    
     pv_temp_mod_params = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']
 
     static_flatplate_sys = cpvlib.StaticFlatPlateSystem(
@@ -304,7 +264,7 @@ def genera_pot_flatplate(A_ref, location, solpos, data, diffuse_model, tilt,
         temperature_model_parameters=pv_temp_mod_params,
         modules_per_string=1,
         in_singleaxis_tracker=in_singleaxis_tracker,
-        parameters_tracke=dict(axis_tilt=10, axis_azimuth=180, max_angle=90, backtrack=True, gcr=2/7)
+        parameters_tracke=parameters_tracker
     )
     
     if in_singleaxis_tracker:
@@ -314,9 +274,17 @@ def genera_pot_flatplate(A_ref, location, solpos, data, diffuse_model, tilt,
 
         surface_tilt = tracking_info.surface_tilt
         surface_azimuth = tracking_info.surface_azimuth
+        
+        aoi = pvlib.tracking.singleaxis(solar_zenith, solar_azimuth, 
+                                        **self.parameters_tracker).aoi
     else:
         surface_tilt = static_flatplate_sys.surface_tilt
         surface_azimuth = static_flatplate_sys.surface_azimuth
+        
+        aoi = static_flatplate_sys.get_aoi(
+            solar_zenith=solpos['zenith'],
+            solar_azimuth=solpos['azimuth']
+            )
             
     pv_irradiance = pvlib.irradiance.get_total_irradiance(
         surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
@@ -325,10 +293,6 @@ def genera_pot_flatplate(A_ref, location, solpos, data, diffuse_model, tilt,
         dni_extra=pvlib.irradiance.get_extra_radiation(data.index), model=diffuse_model
     )['poa_diffuse']
     
-    aoi = static_flatplate_sys.get_aoi(
-        solar_zenith=solpos['zenith'],
-        solar_azimuth=solpos['azimuth'],
-    )
     
     if type_irr_input == 'diffuse':
         pv_effective_irradiance = (
@@ -367,11 +331,11 @@ def genera_pot_flatplate(A_ref, location, solpos, data, diffuse_model, tilt,
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.StaticFlatPlateSystem(
-        module_parameters=pv_mod_params
+        module_parameters=pv_mod_params_copy
         ).calcparams_pvsyst(
         effective_irradiance=1000,
         temp_cell=25))['p_mp']
     
-    eff_a = Pdc_stc / (1000 * A)
+    eff_a = Pdc_stc / (1000 * A_pv)
 
     return pv_irradiance, p_mp, Pdc_stc, eff_a, aoi
