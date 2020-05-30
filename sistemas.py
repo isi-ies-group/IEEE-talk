@@ -49,11 +49,11 @@ UF_parameters_cpv = {
     "am_thld": 1.7,
     "am_uf_m_low": 0.1,
     "am_uf_m_high": -0.1,
-    "ta_thld": 25,
-    "ta_uf_m_low": 0.005,
-    "ta_uf_m_high": 0,
-    "weight_am": 0.55,
-    "weight_temp": 0.45,
+    # "ta_thld": 25,
+    # "ta_uf_m_low": 0.005,
+    # "ta_uf_m_high": 0,
+    # "weight_am": 0.55,
+    # "weight_temp": 0.45,
 }
 
 cpv_mod_params.update(UF_parameters_cpv)
@@ -114,8 +114,7 @@ def genera_pot_pv(location, solpos, data, tilt, diffuse_model, in_singleaxis_tra
     # Modelo pérdidas angulares
     irradiance = pv_irr['poa_global']
     effective_irradiance = irradiance * pvlib.iam.martin_ruiz(aoi, a_r=0.16)
-
-
+    
     cell_temp = pv_sys.pvsyst_celltemp(
         poa_global=effective_irradiance,
         temp_air=data['temp_air'],
@@ -249,8 +248,8 @@ def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleax
     return irradiance, p_mp_uf, Pdc_stc, eff_a, aoi
 
 def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt, 
-                         aoi_limit, eff_opt_pv, cpv_irradiance_spillage, 
-                         type_irr_input, in_singleaxis_tracker=False):
+                          aoi_limit, eff_opt_pv, cpv_irradiance_spillage, 
+                          type_irr_input, in_singleaxis_tracker=False):
 
     pv_mod_params_copy = pv_mod_params.copy()
     pv_mod_params_copy["I_L_ref"] *= eff_opt_pv
@@ -260,11 +259,11 @@ def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt,
     static_flatplate_sys = cpvlib.StaticFlatPlateSystem(
         surface_tilt=tilt,
         surface_azimuth=180,
-        module_parameters=pv_mod_params,
+        module_parameters=pv_mod_params_copy,
         temperature_model_parameters=pv_temp_mod_params,
         modules_per_string=1,
         in_singleaxis_tracker=in_singleaxis_tracker,
-        parameters_tracke=parameters_tracker
+        parameters_tracker=parameters_tracker
     )
     
     if in_singleaxis_tracker:
@@ -275,16 +274,15 @@ def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt,
         surface_tilt = tracking_info.surface_tilt
         surface_azimuth = tracking_info.surface_azimuth
         
-        aoi = pvlib.tracking.singleaxis(solar_zenith, solar_azimuth, 
-                                        **self.parameters_tracker).aoi
     else:
         surface_tilt = static_flatplate_sys.surface_tilt
         surface_azimuth = static_flatplate_sys.surface_azimuth
         
-        aoi = static_flatplate_sys.get_aoi(
-            solar_zenith=solpos['zenith'],
-            solar_azimuth=solpos['azimuth']
-            )
+    # el objeto static_flatplate_sys ya contiene el flag de tracker y sabe devolver bien
+    aoi = static_flatplate_sys.get_aoi(
+        solar_zenith=solpos['zenith'],
+        solar_azimuth=solpos['azimuth']
+        )
             
     pv_irradiance = pvlib.irradiance.get_total_irradiance(
         surface_tilt=surface_tilt, surface_azimuth=surface_azimuth,
@@ -292,7 +290,6 @@ def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt,
         dni=data['dni'], ghi=data['ghi'], dhi=data['dhi'],
         dni_extra=pvlib.irradiance.get_extra_radiation(data.index), model=diffuse_model
     )['poa_diffuse']
-    
     
     if type_irr_input == 'diffuse':
         pv_effective_irradiance = (
@@ -313,7 +310,7 @@ def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt,
             ) * pvlib.iam.martin_ruiz(aoi, a_r=0.16) + cpv_irradiance_spillage
     else:
         raise SystemError
-
+    
     pv_cell_temp = static_flatplate_sys.pvsyst_celltemp(
         poa_flatplate_static=pv_effective_irradiance,
         temp_air=data['temp_air'],
