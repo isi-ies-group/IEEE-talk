@@ -1,4 +1,5 @@
 from math import sqrt
+import matplotlib.pyplot as plt
 
 import pvlib
 
@@ -125,9 +126,15 @@ def genera_pot_pv(location, solpos, data, tilt, diffuse_model, in_singleaxis_tra
     effective_irradiance=effective_irradiance,
     temp_cell=cell_temp,
     )
-
+    
     power = pv_sys.singlediode(*diode_parameters)
     p_mp = power['p_mp']
+    
+    diode_parameters_25 = pv_sys.calcparams_pvsyst(
+    effective_irradiance=effective_irradiance,
+    temp_cell=25,
+    )
+    p_mp_25 = pv_sys.singlediode(*diode_parameters_25)['p_mp']
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*pvlib.pvsystem.PVSystem(
@@ -138,7 +145,7 @@ def genera_pot_pv(location, solpos, data, tilt, diffuse_model, in_singleaxis_tra
     
     eff_a = Pdc_stc / (1000 * A_pv)
     
-    return irradiance, p_mp, Pdc_stc, eff_a
+    return irradiance, p_mp, p_mp_25, Pdc_stc, eff_a
 
 def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv):
     
@@ -160,19 +167,27 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv):
     temp_air=data['temp_air'],
     wind_speed=data['wind_speed']
     )
-    
+
     diode_parameters = cpv_sys.calcparams_pvsyst(
         effective_irradiance=irradiance,
         temp_cell=cell_temp,
     )
     
     power = cpv_sys.singlediode(*diode_parameters)
+    p_mp = power['p_mp']
+
+    diode_parameters_25 = cpv_sys.calcparams_pvsyst(
+    effective_irradiance=irradiance,
+    temp_cell=25,
+    )
+    p_mp_25 = cpv_sys.singlediode(*diode_parameters_25)['p_mp']
     
     data['am'] = location.get_airmass(data.index).airmass_absolute
 
     uf_cpv = cpv_sys.get_am_util_factor(data['am'])
     
-    p_mp_uf = power['p_mp'] * uf_cpv
+    p_mp_uf = p_mp * uf_cpv
+    p_mp_uf_25 = p_mp_25 * uf_cpv
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.CPVSystem(
@@ -183,7 +198,7 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv):
     
     eff_a = Pdc_stc / (1000 * A_cpv)
     
-    return irradiance, p_mp_uf, Pdc_stc, eff_a
+    return irradiance, p_mp_uf, p_mp_uf_25, Pdc_stc, eff_a
 
 def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleaxis_tracker=False):
 
@@ -230,11 +245,18 @@ def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleax
 
     power_no_uf = static_cpv_sys.singlediode(*diode_parameters)
 
+    diode_parameters_25 = static_cpv_sys.calcparams_pvsyst(
+    effective_irradiance=irradiance,
+    temp_cell=25,
+    )
+    power_no_uf_25 = static_cpv_sys.singlediode(*diode_parameters_25)
+
     data['am'] = location.get_airmass(data.index).airmass_absolute
 
     uf_cpv = static_cpv_sys.get_am_util_factor(data['am'])
 
     p_mp_uf = power_no_uf['p_mp'] * uf_cpv
+    p_mp_uf_25 = power_no_uf_25['p_mp'] * uf_cpv
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.StaticCPVSystem(
@@ -245,7 +267,7 @@ def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleax
     
     eff_a = Pdc_stc / (1000 * A_cpv)
     
-    return irradiance, p_mp_uf, Pdc_stc, eff_a, aoi
+    return irradiance, p_mp_uf, p_mp_uf_25, Pdc_stc, eff_a
 
 def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt, 
                           aoi_limit, eff_opt_pv, cpv_irradiance_spillage, 
@@ -311,20 +333,30 @@ def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt,
     else:
         raise SystemError
     
-    pv_cell_temp = static_flatplate_sys.pvsyst_celltemp(
+    cell_temp = static_flatplate_sys.pvsyst_celltemp(
         poa_flatplate_static=pv_effective_irradiance,
         temp_air=data['temp_air'],
         wind_speed=data['wind_speed']
     )
     
-    pv_diode_parameters = static_flatplate_sys.calcparams_pvsyst(
+    diode_parameters = static_flatplate_sys.calcparams_pvsyst(
         effective_irradiance=pv_effective_irradiance,
-        temp_cell=pv_cell_temp,
+        temp_cell=cell_temp,
     )
     
-    pv_power = static_flatplate_sys.singlediode(*pv_diode_parameters)
+    # plt.figure();cell_temp.hist(bins=50)
+    # plt.figure();data['temp_air'].hist(bins=50)
     
-    p_mp = pv_power['p_mp']
+    power = static_flatplate_sys.singlediode(*diode_parameters)
+
+    diode_parameters_25 = static_flatplate_sys.calcparams_pvsyst(
+        effective_irradiance=pv_effective_irradiance,
+        temp_cell=25,
+    )
+    power_25 = static_flatplate_sys.singlediode(*diode_parameters_25)
+    
+    p_mp = power['p_mp']
+    p_mp_25 = power_25['p_mp']
     
     # calcula Pmp STC
     Pdc_stc = pvlib.pvsystem.singlediode(*cpvlib.StaticFlatPlateSystem(
@@ -334,5 +366,5 @@ def genera_pot_flatplate(location, solpos, data, diffuse_model, tilt,
         temp_cell=25))['p_mp']
     
     eff_a = Pdc_stc / (1000 * A_pv)
-
-    return pv_irradiance, p_mp, Pdc_stc, eff_a, aoi
+    
+    return pv_irradiance, p_mp, p_mp_25, Pdc_stc, eff_a
