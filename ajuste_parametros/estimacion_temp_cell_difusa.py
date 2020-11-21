@@ -9,7 +9,7 @@ import numpy as np
 
 import pvlib
 
-data = pd.read_csv('../datos/InsolightMay2019.csv',
+data = pd.read_csv('data/InsolightMay2019.csv',
                    index_col='Date Time', parse_dates=True, encoding='latin1')
 data.index = data.index.tz_localize('Europe/Madrid')
 
