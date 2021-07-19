@@ -3,6 +3,6 @@ name: cpvlib-environment
 channels:
   - conda-forge
 dependencies:
-  - pvlib::pvlib
+  - pvlib::pvlib=0.7
   - matplotlib
   - pandas
