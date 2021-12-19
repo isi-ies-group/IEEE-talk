@@ -8,7 +8,8 @@ import cpvlib
 A_ref = 10 # la eficiencia está ajustada para el FF con A_ref=10
 
 # Canadian Solar CS1U-410MS - PVSyst
-A_pv = 2.061  # m2
+eff_pv = 20
+A_pv = 2.061 * (20.5/eff_pv)  # m2
 
 corr_pv = A_ref / A_pv
 A_pv *= corr_pv
@@ -25,8 +26,9 @@ pv_mod_params = {
     "cells_in_series": 81 *sqrt(corr_pv),
 }
 
+eff_cpv = 30
 # Soitec CX-M500
-A_cpv = 7.386  # m2
+A_cpv = 7.386 * (34.87/eff_cpv)  # m2
 
 corr_cpv = A_ref / A_cpv
 A_cpv *= corr_cpv
@@ -47,9 +49,9 @@ cpv_mod_params = {
 
 UF_parameters_cpv = {
     "IscDNI_top": 1,
-    "am_thld": 1.7,
-    "am_uf_m_low": 0.1,
-    "am_uf_m_high": -0.1,
+    "am_thld": 1,#1.7,
+    "am_uf_m_low": 1,#0.1,
+    "am_uf_m_high": 1,#-0.1,
     # "ta_thld": 25,
     # "ta_uf_m_low": 0.005,
     # "ta_uf_m_high": 0,
@@ -114,7 +116,7 @@ def genera_pot_pv(location, solpos, data, tilt, diffuse_model, in_singleaxis_tra
     
     # Modelo pérdidas angulares
     irradiance = pv_irr['poa_global']
-    effective_irradiance = irradiance * pvlib.iam.martin_ruiz(aoi, a_r=0.16)
+    effective_irradiance = irradiance * pvlib.iam.martin_ruiz(aoi, a_r=0.16) # default value
     
     cell_temp = pv_sys.pvsyst_celltemp(
         poa_global=effective_irradiance,
@@ -160,6 +162,7 @@ def genera_pot_cpv(location, solpos, data, tilt, eff_opt_cpv):
         modules_per_string=1,
     )
     
+    #print(cpv_sys.module_parameters)
     irradiance = data['dni']
     
     cell_temp = cpv_sys.pvsyst_celltemp(
@@ -225,9 +228,12 @@ def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleax
         solar_azimuth=solpos['azimuth'],
     )
 
-    theta_ref = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
-    iam_ref = [1.000, 1.007, 0.998, 0.991, 0.971, 0.966, 0.938, 0.894, 0.830, 0.790, 0.740, 0.649, 0.387]
-
+    # theta_ref = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+    # iam_ref = [1.000, 1.007, 0.998, 0.991, 0.971, 0.966, 0.938, 0.894, 0.830, 0.790, 0.740, 0.649, 0.387]
+    
+    theta_ref = [0, 30, 55, 75]
+    iam_ref = [1.0, 1.0, 0.9, 0]
+    
     cpv_effective_irradiance = irradiance * pvlib.iam.interp(aoi, theta_ref, iam_ref, method='linear')
 
     #pd.Series(iam_ref, theta_ref).plot()
