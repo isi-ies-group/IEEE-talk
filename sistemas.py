@@ -50,8 +50,8 @@ cpv_mod_params = {
 UF_parameters_cpv = {
     "IscDNI_top": 1,
     "am_thld": 1,#1.7,
-    "am_uf_m_low": 1,#0.1,
-    "am_uf_m_high": 1,#-0.1,
+    "am_uf_m_low": 0,#0.1,
+    "am_uf_m_high": 0,#-0.1,
     # "ta_thld": 25,
     # "ta_uf_m_low": 0.005,
     # "ta_uf_m_high": 0,
