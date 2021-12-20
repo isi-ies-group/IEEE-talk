@@ -231,8 +231,8 @@ def genera_pot_static_cpv(location, solpos, data, tilt, eff_opt_cpv, in_singleax
     # theta_ref = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
     # iam_ref = [1.000, 1.007, 0.998, 0.991, 0.971, 0.966, 0.938, 0.894, 0.830, 0.790, 0.740, 0.649, 0.387]
     
-    theta_ref = [0, 30, 55, 75]
-    iam_ref = [1.0, 1.0, 0.9, 0]
+    theta_ref = [0, 40, 55, 70, 90]
+    iam_ref = [1.0, 1.0, 0.90, 0.85, 0]
     
     cpv_effective_irradiance = irradiance * pvlib.iam.interp(aoi, theta_ref, iam_ref, method='linear')
 
