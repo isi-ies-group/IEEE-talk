@@ -2,7 +2,11 @@
 2020-06 IEEE talk
 
 ## Notebooks en Binder
-* productividad_juntos.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=productividad_juntos.ipynb) 
+* productividad_juntos.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=productividad_juntos.ipynb)
+
+* productividad_juntos.ipynb  microCPV_call branch
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/microCPV_call?filepath=productividad_juntos.ipynb)
+
 * analisis_recurso.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=analisis_recurso.ipynb)
 * productividad_pv.ipynb [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/isi-ies-group/StaticHybridSystem-benchmark/master?filepath=productividad_pv.ipynb)
 
